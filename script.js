@@ -1,20 +1,36 @@
-// script.js
-
 /**
- * Menghitung fase bulan berdasarkan tanggal
+ * Menghitung fase bulan dengan metode numerik iterasi langsung
  * @param {Date} date - Tanggal input
  * @returns {string} - Deskripsi fase bulan
  */
-function hitungFaseBulan(date) {
+function hitungFaseBulanIterasi(date) {
     // Referensi: Bulan baru pada 6 Januari 2000
     const bulanBaruReferensi = new Date(Date.UTC(2000, 0, 6, 18, 14)); // 6 Januari 2000, 18:14 UTC
     const siklusBulan = 29.530588853; // Siklus sinodik dalam hari
 
     // Menghitung jumlah hari sejak referensi
     const selisihHari = (date - bulanBaruReferensi) / (1000 * 60 * 60 * 24);
-    const fase = (selisihHari % siklusBulan + siklusBulan) % siklusBulan; // Modulus positif
 
-    // Menentukan fase bulan
+    // Metode iterasi numerik langsung untuk menghitung fase bulan
+    let fase = selisihHari; // Inisialisasi fase berdasarkan selisih hari
+    let iterasi = 0;
+    const maxIterasi = 100; // Batas iterasi untuk menghindari loop tak terhingga
+    const toleransi = 0.00001; // Toleransi kesalahan untuk konvergensi
+
+    // Iterasi untuk mengkonvergensikan fase bulan
+    while (iterasi < maxIterasi) {
+        // Modulus untuk memastikan fase berada dalam siklus bulan
+        fase = (fase % siklusBulan + siklusBulan) % siklusBulan; // Menjaga fase dalam siklus bulan
+
+        // Jika fase sudah cukup konvergen, keluar dari loop
+        if (Math.abs(fase - (selisihHari % siklusBulan)) < toleransi) {
+            break;
+        }
+
+        iterasi++;
+    }
+
+    // Tentukan fase bulan berdasarkan hasil iterasi
     if (fase < 1) return "Bulan Baru 🌑";
     if (fase < 7.4) return "Kuartal Pertama (Waxing) 🌒";
     if (fase < 14.8) return "Bulan Purnama 🌕";
@@ -31,7 +47,7 @@ document.getElementById("calculate-button").addEventListener("click", () => {
     }
 
     const tanggal = new Date(tanggalInput);
-    const faseBulan = hitungFaseBulan(tanggal);
+    const faseBulan = hitungFaseBulanIterasi(tanggal);
 
     // Menampilkan hasil
     document.getElementById("result").innerText = `Fase Bulan pada ${tanggal.toLocaleDateString('id-ID')} adalah: ${faseBulan}`;
